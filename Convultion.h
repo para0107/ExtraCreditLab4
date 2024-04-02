@@ -6,16 +6,17 @@
 #define EXTRACREDIT_CONVULTION_H
 
 #include "ImageProcessing.h"
-#include <functional>
-
+#include "Image.h"
+//#include <functional>
+//typedef int scale_this_pixel(int i, int j, Image& other);
+typedef int (*scale_this_pixel)(int input);
 class Convultion :public ImageProcessing{
-    public:
-        Image& Kernel;
-        using Scale_the_pixel = std::function<void(Image&)>;
-        Scale_the_pixel scaleThePixel;
-        //static void Scale_the_pixel(Image& other);
-        void process(const Image& src, Image& dst) const ;
-        Convultion(Image kernel, Scale_the_pixel scaleThePixel1 );
+public:
+        Convultion( scale_this_pixel func, const int kernel[3][3]);
+        void process(const Image& src, Image&dst) override;
+private:
+    int kernel[3][3];
+    scale_this_pixel func;
 
 };
 
