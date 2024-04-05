@@ -10,7 +10,7 @@
 class GammaCorrection :public ImageProcessing{
 public:
     unsigned int Gamma;
-    void process(const Image& src, Image& dst) const ;
+    void process(const Image& src, Image& dst) override ;
     GammaCorrection(unsigned int Gamma);
 
 

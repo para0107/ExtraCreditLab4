@@ -9,7 +9,7 @@
 
 class BrightnessandControl : public ImageProcessing{
 public:
-    void process(const Image& src, Image& dst) override;
+    void process(const Image& src, Image& dst) const ;
 unsigned int alfa;
 int beta;
 BrightnessandControl();
