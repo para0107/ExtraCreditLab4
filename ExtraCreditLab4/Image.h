@@ -29,7 +29,7 @@ public:
     [[nodiscard]] Size size() const;
     [[nodiscard]] unsigned int width() const;
     [[nodiscard]] unsigned int height() const;
-    unsigned char& at( unsigned int x, unsigned int y);
+    unsigned char& at(unsigned int x, unsigned int y);
     unsigned char& at(Point pt);
     unsigned char* row(int y);
     void release();
@@ -40,7 +40,7 @@ public:
 
     void set_width(unsigned int wid);
     void set_height(unsigned int hei);
-   //Image add_each_pixel_with_scalar(unsigned int s);
+   Image add_each_pixel_with_scalar(unsigned int s);
    [[nodiscard]] int get_pixel(int i, int j) const;
    void set_pixel(int i, int j, int val);
 private:

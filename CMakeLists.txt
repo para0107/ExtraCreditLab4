@@ -9,4 +9,7 @@ add_executable(ExtraCredit main.cpp
         Rectangle.cpp
         Image.cpp
         ImageProcessing.cpp
-        BrightnessandControl.cpp)
+        BrightnessandControl.cpp
+        GammaCorrection.cpp
+        Convultion.cpp
+        DrawingModule.cpp)

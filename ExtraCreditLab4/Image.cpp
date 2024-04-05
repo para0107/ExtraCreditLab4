@@ -26,26 +26,22 @@ Image::Image(unsigned int w, unsigned int h)
         }
     }
 }
-Image::Image(const Image& other) : m_width(other.m_width), m_height(other.m_height) {
-    m_data = new unsigned char*[m_height];
-    for (unsigned int i = 0; i < m_height; ++i)
-    {
-        m_data[i] = new unsigned char[m_width];
-        for (unsigned int j = 0; j < m_width; ++j)
-        {
-            m_data[i][j] = other.m_data[i][j];
-        }
-    }
+Image::Image(const Image &other)
+{
+    this->m_data = other.m_data;
+    this->m_width = other.m_width;
+    this->m_height = other.m_height;
 }
 
 Image &Image::operator=(const Image &other)
 {
         if (this != &other) {
-            for (unsigned int i = 0; i < m_height; ++i) {
-                delete[] m_data[i];
+            if (m_data != nullptr) {
+                for (unsigned int i = 0; i < m_height; ++i) {
+                    delete[] m_data[i];
+                }
+                delete[] m_data;
             }
-            delete[] m_data;
-
             m_width = other.m_width;
             m_height = other.m_height;
 
@@ -53,15 +49,16 @@ Image &Image::operator=(const Image &other)
             for (unsigned int i = 0; i < m_height; ++i)
             {
                 m_data[i] = new unsigned char[m_width];
-                for (unsigned int j = 0; j < m_width; ++j)
-                {
+            }
+
+            // Copy pixel data
+            for ( int i = 0; i < m_height; i++) {
+                for(int j = 0; j <m_width; j++)
                     m_data[i][j] = other.m_data[i][j];
-                }
             }
         }
         return *this;
     }
-
 Image::~Image()
 {
     if (m_data != nullptr)
@@ -130,12 +127,11 @@ std::ostream& operator<<(std::ostream& os, const Image& dt)
     for(int i = 0; i < dt.m_height; i++)
     {
         for(int j = 0; j < dt.m_width; j++)
-            os<<int(dt.m_data[i][j])<<" ";
+            os<<dt.m_data[i][j]<<" ";
         os<<std::endl;
     }
     return os;
 }
-
 bool Image::load(std::string imagePath)
 {
     std::ifstream f(imagePath);
@@ -184,24 +180,24 @@ Image Image::ones(unsigned int width, unsigned int height)
 }
 unsigned char& Image::at(unsigned int x, unsigned int y)
 {
-//    if (x > m_width)
-//        throw std::out_of_range("X_coordonate outside the width line");
-//    if (y > m_height)
-//        throw std::out_of_range("Y_coordonate outside the height line");
-    return m_data[y][x];
+    if (x > m_width)
+        throw std::out_of_range("X_coordonate outside the width line");
+    if (y > m_height)
+        throw std::out_of_range("Y_coordonate outside the height line");
+    return m_data[x][y];
 }
 unsigned char& Image::at(Point pt)
 {
-//    if(pt.get_x() > m_width)
-//        throw std::out_of_range("X_coordonate outside the width line");
-//    if (pt.get_y() > m_height)
-//        throw std::out_of_range("Y_coordonate outside the height line");
-    return m_data[pt.get_y()][pt.get_x()];
+    if(pt.get_x() > m_width)
+        throw std::out_of_range("X_coordonate outside the width line");
+    if (pt.get_y() > m_height)
+        throw std::out_of_range("Y_coordonate outside the height line");
+    return m_data[pt.get_x()][pt.get_y()];
 }
 unsigned char* Image::row(int y)
 {
-//    if( y > m_height)
-//        throw std::out_of_range("This is outside the height line");
+    if( y > m_height)
+        throw std::out_of_range("This is outside the height line");
     return m_data[y];
 
 }
@@ -215,7 +211,7 @@ Image Image::operator+(const Image &i) const
         new_imagine.m_width = this->m_width;
         for(int x = 0; x < m_height; x++)
             for(int j = 0; j < m_width; j++)
-                new_imagine.m_data[x][j] = i.m_data[x][j] + this->m_data[x][j];
+                new_imagine.m_data[x][j] += i.m_data[x][j];
     return new_imagine;
     }
 }
@@ -226,87 +222,54 @@ Image Image::operator-(const Image &i) const
     else
     {
         Image new_imagine(m_width, m_height);
+        new_imagine.m_data = m_data;
         for (int x = 0; x < m_height; x++)
             for (int j = 0; j < m_width; j++)
-                new_imagine.m_data[x][j] = this->m_data[x][j] - i.m_data[x][j];
+                new_imagine.m_data[x][j] -= i.m_data[x][j];
         return new_imagine;
     }
 }
 Image Image::operator*(double s)
 {
     Image new_image(m_width,m_height);
+    new_image.m_data = m_data;
 
     for(int i = 0; i < m_height; i++)
         for(int j = 0; j < m_width; j++)
-           // new_image.m_data[i][j] = static_cast<unsigned char>(static_cast<double>(new_image.m_data[i][j]*s));
-                new_image.m_data[i][j] = this->m_data[i][j] * s;
+            new_image.m_data[i][j] = static_cast<unsigned char>(static_cast<double>(new_image.m_data[i][j]*s));
+
     return new_image;
 }
-
 bool Image::getROI(Image &roiImg, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 {
-    if (width == 0 or height == 0) {
-        roiImg = Image();
+    if(x+height > m_height or y+width > m_width)
+        return false;
+
+        roiImg.m_width = width;
+        roiImg.m_height = height;
+        for(unsigned int i = x; i < height; i++)
+            for(unsigned int j = y; j< width; j++)
+                roiImg.m_data[i][j] = this->m_data[i][j];
         return true;
-    }
-
-    if (width < 1 || height < 1)return false;
-
-    if (y >= m_height || x >= m_width)return false;
-
-    if (height > m_height || width > m_width)return false;
-
-    if (abs(int(y) - int(height)) > m_height || abs(int(x) + int(width)) > m_width)return false;
-
-    if (m_height - y + height - 2 > m_height)return false;
-
-    roiImg = Image(width, height);
-
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            //int I = i + abs(int(y) - int(m_height)) - 1;
-            //int Y = j + x;
-            int a = int(m_data[i + abs(int(y) - int(m_height)) - 1][j + x]);
-            roiImg.at(j, i) = a;
-        }
-    }
-    return true;
 
 }
 bool Image::getROI(Image &roiImg, Rectangle roiRect)
 {
-    if (roiRect.get_width() == 0 || roiRect.get_height() == 0)
-    {
-        roiImg = Image();
-        return true;
-    }
-
-    unsigned int x = roiRect.get_x(), y = roiRect.get_y(), width = roiRect.get_width(), height = roiRect.get_height();
-    if (width < 1 || height < 1)return false;
-    if (y >= m_height || x >= m_width)return false;
-    if (height > m_height || width > m_width)return false;
-    if (abs(int(y) - int(height)) > m_height || abs(int(x) + int(width)) > m_width)return false;
-
-    roiImg = Image(width, height);
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            //int a = i + abs(int(x) - int(m_height)) - 1;
-            roiImg.at(j, i) = int(m_data[i + abs(int(y) - int(m_height)) - 1][j + x]);
-        }
-    }
+    if(roiRect.get_x()+roiRect.get_height() > m_height or roiRect.get_y()+roiRect.get_width() > m_width)
+        return false;
+    roiImg = Image(roiRect.get_width(),roiRect.get_height());
+    for(int i = roiRect.get_x(); i < roiRect.get_height(); i++)
+        for(int j = roiRect.get_y(); j< roiRect.get_width(); j++)
+            roiImg.m_data[i][j] = this->m_data[i][j];
     return true;
 }
-//Image Image::add_each_pixel_with_scalar( unsigned int s)
-//{
-//    for(int i = 0; i < m_height; i++)
-//        for(int j = 0; j < m_width; j++)
-//            m_data[i][j] =static_cast<char>(static_cast<unsigned int>(m_data[i][j] + s));
-//    return *this;
-//}
+Image Image::add_each_pixel_with_scalar( unsigned int s)
+{
+    for(int i = 0; i < m_height; i++)
+        for(int j = 0; j < m_width; j++)
+            m_data[i][j] =static_cast<char>(static_cast<unsigned int>(m_data[i][j] + s));
+    return *this;
+}
 int Image::get_pixel(int i, int j) const
 {
     return this->m_data[i][j];
